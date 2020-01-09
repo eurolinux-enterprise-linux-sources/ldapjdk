@@ -1,3 +1,6 @@
+%global _use_internal_dependency_generator 0
+%global __find_provides %{_rpmconfigdir}/find-provides
+%global __find_requires sh -c "%{_rpmconfigdir}/find-requires | grep -v ^libgcj"
 
 %define _with_gcj_support 1
 
@@ -9,7 +12,7 @@
 
 Name:		ldapjdk
 Version:	4.18
-Release:	6%{?dist}
+Release:	8%{?dist}
 Epoch:		0
 Summary: 	The Mozilla LDAP Java SDK
 License:	MPLv1.1 or GPLv2+ or LGPLv2+
@@ -42,8 +45,6 @@ BuildRoot: 	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %if %{gcj_support}
 BuildRequires:		java-gcj-compat-devel
-Requires(post):		java-gcj-compat
-Requires(postun):	java-gcj-compat
 %endif
 
 %description
@@ -144,6 +145,14 @@ fi
 %{_javadocdir}/%{name}-%{version}/*
 
 %changelog
+* Thu Dec  8 2016 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:4.18-8
+- Filter auto-requires on libgcj
+- Resolves: rhbz#1343156
+
+* Tue Jun 14 2016 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:4.18-7
+- Remove runtime dependency on GCJ
+- Resolves: rhbz#1343156
+
 * Thu Mar 31 2011 Rich Megginson <rmeggins@redhat.com> 0:4.18-6
 - Resolves: bug 684028 - LDAPSchemaElement.getOptionalValues() mangles values
 - upstream mozilla id=640750
