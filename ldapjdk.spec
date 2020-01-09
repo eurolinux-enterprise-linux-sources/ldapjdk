@@ -9,7 +9,7 @@
 
 Name:		ldapjdk
 Version:	4.18
-Release:	5.1%{?dist}
+Release:	6%{?dist}
 Epoch:		0
 Summary: 	The Mozilla LDAP Java SDK
 License:	MPLv1.1 or GPLv2+ or LGPLv2+
@@ -20,6 +20,7 @@ URL:		http://www.mozilla.org/directory/javasdk.html
 # tar -zcf ldapjdk-4.18,tar.gz ldapjdk-4.18
 Source:		%{name}-%{version}.tar.gz
 Patch0: 	%{name}-jarnamefix.patch
+Patch1:         matching-rule-parsing-640750.patch
 
 Requires:	jaas
 Requires:	jndi
@@ -63,6 +64,7 @@ Javadoc for %{name}
 rm -f ./mozilla/directory/java-sdk/ldapjdk/lib/{jss32_stub,jsse,jnet,jaas,jndi}.jar
 
 %patch0 -p1
+%patch1 -p1
 
 %build
 # cleanup CVS dirs
@@ -142,6 +144,10 @@ fi
 %{_javadocdir}/%{name}-%{version}/*
 
 %changelog
+* Thu Mar 31 2011 Rich Megginson <rmeggins@redhat.com> 0:4.18-6
+- Resolves: bug 684028 - LDAPSchemaElement.getOptionalValues() mangles values
+- upstream mozilla id=640750
+
 * Mon Nov 30 2009 Dennis Gregorovic <dgregor@redhat.com> - 0:4.18-5.1
 - Rebuilt for RHEL 6
 
