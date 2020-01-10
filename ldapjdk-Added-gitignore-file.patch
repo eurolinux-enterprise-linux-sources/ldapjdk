@@ -1,0 +1,45 @@
+From 8066b70367ea28a2e053a23172b230a938152bd8 Mon Sep 17 00:00:00 2001
+From: Matthew Harmsen <mharmsen@redhat.com>
+Date: Thu, 12 Oct 2017 10:35:46 -0600
+Subject: [PATCH] Added .gitignore file
+
+ldapjdk Pagure Issue #1 - Add .gitignore file based upon contents
+                          of .hgignore file
+
+Change-Id: I6ceb4653a0b51eecf9314109fed9f4326bb07821
+---
+ .gitignore | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..e4ad492
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,22 @@
++# .gitignore - List of filenames git should ignore
++
++# Filenames that should be ignored wherever they appear
++.pyc
++TAGS
++Makefile
++now
++
++
++# User files that may appear at the root
++**/config/.cache
++**/config/.log
++**/config/.status
++**/config/autoconf.mk
++**/config/nsinstall
++.fast-update
++
++sdkver.h
++dirver.h
++
++# Ignore Eclipse build directory
++bin
+-- 
+2.13.6
+

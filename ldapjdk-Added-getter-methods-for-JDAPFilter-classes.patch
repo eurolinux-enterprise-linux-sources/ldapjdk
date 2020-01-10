@@ -1,0 +1,447 @@
+From 3258e4276bd13f3c9cd45ddf416e77b9732f079a Mon Sep 17 00:00:00 2001
+From: "Endi S. Dewata" <edewata@redhat.com>
+Date: Mon, 2 Oct 2017 17:44:02 +0200
+Subject: [PATCH] Added getter methods for JDAPFilter classes.
+
+Some JDAPFilter classes have been modified to provide getter
+methods to access the elements of parsed LDAP filters.
+
+Eclipse project files have been added to simplify development
+using Eclipse.
+
+The LDAPUrl has been modified to fix complie error in Eclipse.
+
+Some unused import statements have been removed as well.
+
+https://bugzilla.mozilla.org/show_bug.cgi?id=1376300
+---
+ .classpath                                         | 11 +++++
+ .project                                           | 17 ++++++++
+ java-sdk/ietfldap/org/ietf/ldap/LDAPUrl.java       |  2 +-
+ java-sdk/ldapjdk/netscape/ldap/client/JDAPAVA.java |  2 -
+ .../netscape/ldap/client/JDAPBERTagDecoder.java    |  1 -
+ .../ldapjdk/netscape/ldap/client/JDAPFilter.java   |  1 -
+ .../netscape/ldap/client/JDAPFilterAVA.java        |  2 -
+ .../netscape/ldap/client/JDAPFilterAnd.java        |  2 -
+ .../ldap/client/JDAPFilterApproxMatch.java         |  2 -
+ .../ldap/client/JDAPFilterEqualityMatch.java       |  2 -
+ .../netscape/ldap/client/JDAPFilterExtensible.java |  2 -
+ .../ldap/client/JDAPFilterGreaterOrEqual.java      |  2 -
+ .../ldap/client/JDAPFilterLessOrEqual.java         |  2 -
+ .../netscape/ldap/client/JDAPFilterNot.java        | 12 ++++--
+ .../ldapjdk/netscape/ldap/client/JDAPFilterOr.java |  4 +-
+ .../netscape/ldap/client/JDAPFilterPresent.java    | 10 ++++-
+ .../netscape/ldap/client/JDAPFilterSet.java        | 10 ++++-
+ .../netscape/ldap/client/JDAPFilterSubString.java  | 50 +++++++++++++++++++---
+ 18 files changed, 100 insertions(+), 34 deletions(-)
+ create mode 100644 .classpath
+ create mode 100644 .project
+
+diff --git a/.classpath b/.classpath
+new file mode 100644
+index 0000000..426c9dd
+--- /dev/null
++++ b/.classpath
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
++	<classpathentry excluding="tools/" kind="src" path="java-sdk/ietfldap"/>
++	<classpathentry kind="src" path="java-sdk/ldapbeans"/>
++	<classpathentry kind="src" path="java-sdk/ldapfilter"/>
++	<classpathentry kind="src" path="java-sdk/ldapjdk"/>
++	<classpathentry kind="src" path="java-sdk/ldapsp"/>
++	<classpathentry kind="lib" path="/usr/lib/java/jss4.jar"/>
++	<classpathentry kind="output" path="bin"/>
++</classpath>
+diff --git a/.project b/.project
+new file mode 100644
+index 0000000..b6607c7
+--- /dev/null
++++ b/.project
+@@ -0,0 +1,17 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>ldap-sdks</name>
++	<comment></comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++	</natures>
++</projectDescription>
+diff --git a/java-sdk/ietfldap/org/ietf/ldap/LDAPUrl.java b/java-sdk/ietfldap/org/ietf/ldap/LDAPUrl.java
+index 5fcd70e..fd808de 100644
+--- a/java-sdk/ietfldap/org/ietf/ldap/LDAPUrl.java
++++ b/java-sdk/ietfldap/org/ietf/ldap/LDAPUrl.java
+@@ -383,7 +383,7 @@ public class LDAPUrl implements java.io.Serializable {
+ 
+             try {
+                 // then try Sun JSSESocketFactory
+-                _factory = new JSSESocketFactory(null);
++                _factory = new JSSESocketFactory((String[])null);
+             }
+             catch (Throwable e) {
+             }
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPAVA.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPAVA.java
+index 6d16bd4..2cc4d76 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPAVA.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPAVA.java
+@@ -37,8 +37,6 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+-import java.io.*;
+ import netscape.ldap.ber.stream.*;
+ 
+ /**
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPBERTagDecoder.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPBERTagDecoder.java
+index 94b69ca..5b87223 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPBERTagDecoder.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPBERTagDecoder.java
+@@ -37,7 +37,6 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+ import java.io.*;
+ 
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilter.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilter.java
+index 366d49d..0e16fff 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilter.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilter.java
+@@ -39,7 +39,6 @@ package netscape.ldap.client;
+ 
+ import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the filter.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAVA.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAVA.java
+index bf80dbe..d31785d 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAVA.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAVA.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the attribute value assertion filter.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAnd.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAnd.java
+index 0a47917..f780cfb 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAnd.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterAnd.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the filter And.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterApproxMatch.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterApproxMatch.java
+index 747f5ed..91ca4a0 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterApproxMatch.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterApproxMatch.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the approximate match filter.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterEqualityMatch.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterEqualityMatch.java
+index c6e0bfe..6d891eb 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterEqualityMatch.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterEqualityMatch.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the equality match filter.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterExtensible.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterExtensible.java
+index 2e83117..04c9710 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterExtensible.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterExtensible.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the extended match filter.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterGreaterOrEqual.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterGreaterOrEqual.java
+index cbf066f..8aa7878 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterGreaterOrEqual.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterGreaterOrEqual.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the greater or equal filter.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterLessOrEqual.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterLessOrEqual.java
+index 8368ad3..7b1b434 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterLessOrEqual.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterLessOrEqual.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the less or equal filter.
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterNot.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterNot.java
+index 4aabd66..e25ea14 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterNot.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterNot.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the filter not.
+@@ -66,6 +64,14 @@ public class JDAPFilterNot extends JDAPFilter {
+     }
+ 
+     /**
++     * Gets original filter.
++     * @return original filter
++     */
++    public JDAPFilter getFilter() {
++    	return m_filter;
++    }
++
++    /**
+      * Gets ber representation of the filter.
+      * @return ber representation
+      */
+@@ -76,7 +82,7 @@ public class JDAPFilterNot extends JDAPFilter {
+     }
+ 
+     /**
+-     * Gets string reprensetation of the filter.
++     * Gets string representation of the filter.
+      * @return string representation
+      */
+     public String toString() {
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterOr.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterOr.java
+index 430760f..d624f01 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterOr.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterOr.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the filter And.
+@@ -59,7 +57,7 @@ public class JDAPFilterOr extends JDAPFilterSet {
+     }
+ 
+     /**
+-     * Gets string reprensetation of the filter.
++     * Gets string representation of the filter.
+      * @return string representation
+      */
+     public String toString() {
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterPresent.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterPresent.java
+index db408a2..796e14e 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterPresent.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterPresent.java
+@@ -37,9 +37,7 @@
+  * ***** END LICENSE BLOCK ***** */
+ package netscape.ldap.client;
+ 
+-import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the filter present.
+@@ -66,6 +64,14 @@ public class JDAPFilterPresent extends JDAPFilter {
+     }
+ 
+     /**
++     * Gets attribute type.
++     * @return attribute type
++     */
++    public String getType() {
++    	return m_type;
++    }
++
++    /**
+      * Gets ber representation of the filter.
+      * @return ber representation
+      */
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSet.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSet.java
+index 72a0098..5f5a71e 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSet.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSet.java
+@@ -51,7 +51,7 @@ public abstract class JDAPFilterSet extends JDAPFilter {
+      * Internal variables
+      */
+     private int m_tag;
+-    private Vector m_set = new Vector();
++    private Vector<JDAPFilter> m_set = new Vector<>();
+ 
+     /**
+      * Constructs the filter set.
+@@ -63,6 +63,14 @@ public abstract class JDAPFilterSet extends JDAPFilter {
+     }
+ 
+     /**
++     * Gets the filter set.
++     * @return filter set
++     */
++     public Collection<JDAPFilter> getFilters() {
++    	 return m_set;
++     }
++
++    /**
+      * Adds filter into the filter set.
+      * @param filter adding filter
+      */
+diff --git a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSubString.java b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSubString.java
+index 129a8ec..b660082 100644
+--- a/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSubString.java
++++ b/java-sdk/ldapjdk/netscape/ldap/client/JDAPFilterSubString.java
+@@ -39,11 +39,10 @@ package netscape.ldap.client;
+ 
+ import java.util.*;
+ import netscape.ldap.ber.stream.*;
+-import java.io.*;
+ 
+ /**
+  * This class implements the filter substring.
+- * See RFC 1777.
++ * See RFC 1777 and 2254.
+  * <pre>
+  * [4] SEQUENCE {
+  *   type AttributeType,
+@@ -52,7 +51,12 @@ import java.io.*;
+  *     any [1] LDAPString,
+  *     final [2] LDAPString
+  *   }
+- *     }
++ * }
++ *
++ * substring  = attr "=" [initial] any [final]
++ * initial    = value
++ * any        = "*" *(value "*")
++ * final      = value
+  * </pre>
+  *
+  * @version 1.0
+@@ -62,9 +66,9 @@ public class JDAPFilterSubString extends JDAPFilter {
+      * Internal variables
+      */
+     private String m_type = null;
+-    private Vector m_initial = new Vector();
+-    private Vector m_any = new Vector();
+-    private Vector m_final = new Vector();
++    private Vector<String> m_initial = new Vector<>();
++    private Vector<String> m_any = new Vector<>();
++    private Vector<String> m_final = new Vector<>();
+ 
+     /**
+      * Constructs the filter.
+@@ -76,6 +80,23 @@ public class JDAPFilterSubString extends JDAPFilter {
+     }
+ 
+     /**
++     * Get attribute type.
++     * @return attribute type
++     */
++    public String getType() {
++    	return m_type;
++    }
++
++    /**
++     * Get initial substring.
++     * @return initial substring.
++     */
++    public String getInitialSubstring() {
++    	// RFC 2254: there is only one optional initial substring
++    	return m_initial.isEmpty() ? null : m_initial.get(0);
++    }
++
++    /**
+      * Adds initial substring.
+      * @param s initial substring
+      */
+@@ -84,6 +105,14 @@ public class JDAPFilterSubString extends JDAPFilter {
+     }
+ 
+     /**
++     * Get any substrings.
++     * @return any substrings.
++     */
++    public Collection<String> getAnySubstrings() {
++    	return m_any;
++    }
++
++    /**
+      * Adds any substring.
+      * @param s any substring
+      */
+@@ -92,6 +121,15 @@ public class JDAPFilterSubString extends JDAPFilter {
+     }
+ 
+     /**
++     * Get final substring.
++     * @return final substring.
++     */
++    public String getFinalSubstring() {
++    	// RFC 2254: there is only one optional final substring
++    	return m_final.isEmpty() ? null : m_final.get(0);
++    }
++
++    /**
+      * Adds final substring.
+      * @param s final substring
+      */
+-- 
+2.13.6
+

@@ -4,7 +4,7 @@
 
 Name:		ldapjdk
 Version:	4.19
-Release:	1%{?dist}
+Release:	5%{?dist}
 Epoch:		0
 Summary: 	The Mozilla LDAP Java SDK
 License:	MPLv1.1 or GPLv2+ or LGPLv2+
@@ -16,11 +16,21 @@ Source:		http://pki.fedoraproject.org/pki/sources/%{name}/%{version}/%{name}-%{v
 # changed: gId, aId and version
 Source1:	http://pki.fedoraproject.org/pki/sources/%{name}/%{version}/%{name}-%{version}.pom
 
+#######################
+## ldapjdk-4.19-4
+#######################
+Patch0:           ldapjdk-Added-getter-methods-for-JDAPFilter-classes.patch
+Patch1:           ldapjdk-Added-gitignore-file.patch
+
 Requires:	jpackage-utils >= 0:1.5
 Requires:       jss
 BuildRequires:  ant
 BuildRequires:  java-devel
+%if 0%{?rhel}
 BuildRequires:	jpackage-utils >= 0:1.5
+%else
+BuildRequires:  javapackages-local
+%endif
 BuildRequires:  jss
 
 Provides:	jndi-ldap = 1.3.0
@@ -42,13 +52,20 @@ Javadoc for %{name}
 %setup -q
 # Remove all bundled jars, we must build against build-system jars
 rm -f ./java-sdk/ldapjdk/lib/{jss32_stub,jsse,jnet,jaas,jndi}.jar
+%patch0 -p1
+%patch1 -p1
 
 %build
 # cleanup CVS dirs
 rm -fr $(find . -name CVS -type d)
 # Link to build-system BRs
 pwd
+%if 0%{?rhel}
 ( cd  java-sdk/ldapjdk/lib && build-jar-repository -s -p . jss4 jsse jaas jndi )
+%else
+( cd  java-sdk/ldapjdk/lib && build-jar-repository -s -p . jss4 )
+ln -s /usr/lib/jvm-exports/java/{jsse,jaas,jndi}.jar java-sdk/ldapjdk/lib
+%endif
 cd java-sdk
 if [ ! -e "$JAVA_HOME" ] ; then export JAVA_HOME="%{_jvmdir}/java" ; fi
 sh -x ant dist
@@ -91,6 +108,20 @@ cp -r java-sdk/dist/doc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 %{_javadocdir}/%{name}/*
 
 %changelog
+* Thu Oct 12 2017 Matthew Harmsen <mharmsen@redhat.com> 0:4.19-5
+- Fix build for CentOS 7 (mharmsen)
+- Resolves rhbz#1465103 - Missing getter methods in JDAPFilter classes
+  (edewata)
+
+* Wed Oct 11 2017 Matthew Harmsen <mharmsen@redhat.com> 0:4.19-4
+- Mozilla Bug #1376300 - Missing getter methods in JDAPFilter classes
+
+* Wed Sep  6 2017 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:4.19-3
+- Don't rely on build-jar-repository for locating JVM extension JARs
+
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0:4.19-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
 * Wed Mar  8 2017 Matthew Harmsen <mharmsen@redhat.com> 0:4.19-1
 - Resolves: rhbz #1394372 - Rebase ldapjdk to 4.19 in RHEL-7.4
 
