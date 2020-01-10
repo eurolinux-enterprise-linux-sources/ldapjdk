@@ -4,7 +4,7 @@
 
 Name:		ldapjdk
 Version:	4.18
-Release:	15%{?dist}
+Release:	16%{?dist}
 Epoch:		0
 Summary: 	The Mozilla LDAP Java SDK
 License:	MPLv1.1 or GPLv2+ or LGPLv2+
@@ -20,6 +20,7 @@ Source1:	http://pki.fedoraproject.org/pki/sources/%{name}/%{name}-%{version}.pom
 Patch0: 	%{name}-jarnamefix.patch
 Patch1:         matching-rule-parsing-640750.patch
 Patch2:         %{name}-support-IPv6.patch
+Patch3:         %{name}-ldap-url-sans-host-port.patch
 
 Requires:	jpackage-utils >= 0:1.5
 Requires:       jss
@@ -50,6 +51,7 @@ rm -f ./mozilla/directory/java-sdk/ldapjdk/lib/{jss32_stub,jsse,jnet,jaas,jndi}.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
 # cleanup CVS dirs
@@ -99,6 +101,10 @@ cp -r mozilla/directory/java-sdk/dist/doc/* $RPM_BUILD_ROOT%{_javadocdir}/%{name
 %{_javadocdir}/%{name}/*
 
 %changelog
+* Mon Oct 31 2016 Matthew Harmsen <mharmsen@redhat.com> 0:4.18-16
+- Resolves: rhbz #1388500 - ldapjdk fails to parse ldap url with no host:port
+  (mreynolds)
+
 * Tue Aug  9 2016 Matthew Harmsen <mharmsen@redhat.com> 0:4.18-15
 - Resolves: rhbz #1353564 - ldapjdk needs to support IPv6 (mreynolds)
 
