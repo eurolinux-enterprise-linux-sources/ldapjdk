@@ -135,9 +135,11 @@ public class LDAPUrl implements java.io.Serializable {
      * (ldaps) is also supported.
      */
     private void parseUrl(String url) throws MalformedURLException {
-        StringTokenizer urlParser = new StringTokenizer (url, ":/?", true);
+        StringTokenizer urlParser = new StringTokenizer (url, ":/?[]", true);
         String currentToken;
         String str = null;
+        boolean usingIPv6 = false;
+        boolean usingDefaultHostPort = false;
 
         try {
             currentToken = urlParser.nextToken();
@@ -160,8 +162,10 @@ public class LDAPUrl implements java.io.Serializable {
             if (!currentToken.equals("/")) {
                 throw new MalformedURLException ();
             }
-        
             currentToken = urlParser.nextToken();
+            if (currentToken.equals("[")) {
+                usingIPv6 = true;
+            }
         }
         catch (NoSuchElementException e) {
             throw new MalformedURLException ();
@@ -171,18 +175,35 @@ public class LDAPUrl implements java.io.Serializable {
         if (currentToken.equals ("/")) {
             m_hostName = null;
             m_portNumber = m_secure ? DEFAULT_SECURE_PORT : LDAPv2.DEFAULT_PORT;
+            usingDefaultHostPort = true;
         } else if (currentToken.equals (":")) {
                 // port number without host name is not allowed
                throw new MalformedURLException ("No hostname");
         } else if (currentToken.equals ("?")) {
             throw new MalformedURLException ("No host[:port]");
+        } else if (usingIPv6){
+            StringBuilder sb = new StringBuilder();
+            while (urlParser.hasMoreElements()) {
+                currentToken = urlParser.nextToken();
+                if (currentToken.equals("]")) {
+                    break;
+                }
+                sb.append(currentToken);
+            }
+            m_hostName = sb.toString();
         } else {
             m_hostName = currentToken;
+        }
+        
+        if (usingDefaultHostPort == false) {
+            // Set the port
             if (urlParser.countTokens() == 0) {
                 m_portNumber = m_secure ? DEFAULT_SECURE_PORT : LDAPv2.DEFAULT_PORT;
                 return;
             }
-            currentToken = urlParser.nextToken (); // either ":" or "/"
+
+            // either ":","/", or the base DN if using "ldap:///"
+            currentToken = urlParser.nextToken ();
 
             if (currentToken.equals (":")) {
                 try {
@@ -192,14 +213,12 @@ public class LDAPUrl implements java.io.Serializable {
                 } catch (NoSuchElementException ex) {
                     throw new MalformedURLException ("No port number");
                 }
-                    
                 if (urlParser.countTokens() == 0) {
                     return;
                 }
                 else if (! urlParser.nextToken().equals("/")) {
-                   throw new MalformedURLException ();
+                    throw new MalformedURLException ();
                 }
-
             } else if (currentToken.equals ("/")) {
                 m_portNumber = m_secure ? DEFAULT_SECURE_PORT : LDAPv2.DEFAULT_PORT;
             } else {
@@ -207,7 +226,6 @@ public class LDAPUrl implements java.io.Serializable {
                 throw new MalformedURLException ();
             }
         }
-
 
         // DN
         if (!urlParser.hasMoreTokens ()) {
